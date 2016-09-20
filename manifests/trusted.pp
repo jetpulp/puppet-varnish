@@ -1,6 +1,6 @@
-# define: varnish::trusted_ip
-define varnish::trusted_ip(
-  $ip,
+# define: varnish::trusted
+define varnish::trusted (
+  $ip = $name,
 ) {
   include varnish
   concat::fragment { "varnish-trusted-${ip}":
