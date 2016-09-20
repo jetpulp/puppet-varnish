@@ -564,7 +564,7 @@ class varnish (
     }
     concat::fragment { 'varnish+11.tmp':
       order   => '11',
-      content => "acl tructed {\n",
+      content => "acl trusted {\n",
       notify  => $varnish::manage_service_autorestart,
       target  => $varnish::vcl_conf,
     }
