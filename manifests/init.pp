@@ -586,6 +586,12 @@ class varnish (
       notify  => $varnish::manage_service_autorestart,
       target  => $varnish::vcl_conf,
     }
+    concat::fragment { 'varnish+50.tmp':
+      order   => '50',
+      content => template($varnish::vcl_template_content),
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
   } else {
     file { 'varnish.vcl':
       ensure  => $varnish::manage_file,
