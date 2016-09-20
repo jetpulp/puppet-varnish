@@ -111,6 +111,16 @@
 #   Source file to setup the backend.
 #   Default: empty
 #
+# [*use_concat*]
+#   Set to true in order to use concat for vcl file creation.
+#   Default: false
+#
+# [*vcl_template_header*]
+#   The concat vcl template header
+#
+# [*vcl_template_content*]
+#   The concat vcl template header
+#
 # Standard class parameters
 # Define the general class behaviour and customizations
 #
@@ -322,6 +332,9 @@ class varnish (
   $vcl_conf             = params_lookup( 'vcl_conf' ),
   $vcl_template         = params_lookup( 'vcl_template' ),
   $vcl_source           = params_lookup( 'vcl_source' ),
+  $use_concat           = params_lookup( 'use_concat' ),
+  $vcl_template_header  = params_lookup( 'vcl_template_header' ),
+  $vcl_template_content = params_lookup( 'vcl_template_content' ),
   $listen_address       = params_lookup( 'listen_address' ),
   $port                 = params_lookup( 'port' ),
   $admin_listen_address = params_lookup( 'admin_listen_address' ),
@@ -387,6 +400,7 @@ class varnish (
   $bool_firewall=any2bool($firewall)
   $bool_debug=any2bool($debug)
   $bool_audit_only=any2bool($audit_only)
+  $bool_use_concat=any2bool($use_concat)
 
   ### Definition of some variables used in the module
   ### Varnish secret setup
@@ -534,19 +548,59 @@ class varnish (
     noop    => $varnish::noops,
   }
 
-  file { 'varnish.vcl':
-    ensure  => $varnish::manage_file,
-    path    => $varnish::vcl_conf,
-    mode    => $varnish::config_file_mode,
-    owner   => $varnish::config_file_owner,
-    group   => $varnish::config_file_group,
-    require => Package[$varnish::package],
-    notify  => $varnish::manage_service_autorestart,
-    source  => $varnish::manage_vcl_file_source,
-    content => $varnish::manage_vcl_file_content,
-    replace => $varnish::manage_file_replace,
-    audit   => $varnish::manage_audit,
-    noop    => $varnish::noops,
+  if $varnish::bool_use_concat {
+    concat { $varnish::vcl_conf: }
+    concat::fragment { 'varnish+00.tmp':
+      order   => '00',
+      content => "# File managed by Puppet\n\n",
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
+    concat::fragment { 'varnish+10.tmp':
+      order   => '01',
+      content => template($varnish::vcl_template_header),
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
+    concat::fragment { 'varnish+11.tmp':
+      order   => '11',
+      content => "acl tructed {\n",
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
+    concat::fragment { 'varnish+19.tmp':
+      order   => '19',
+      content => "}\n",
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
+    concat::fragment { 'varnish+21.tmp':
+      order   => '21',
+      content => "sub vcl_init {\n  new vdir = directors.round_robin();\n",
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
+    concat::fragment { 'varnish+29.tmp':
+      order   => '29',
+      content => "}\n",
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
+  } else {
+    file { 'varnish.vcl':
+      ensure  => $varnish::manage_file,
+      path    => $varnish::vcl_conf,
+      mode    => $varnish::config_file_mode,
+      owner   => $varnish::config_file_owner,
+      group   => $varnish::config_file_group,
+      require => Package[$varnish::package],
+      notify  => $varnish::manage_service_autorestart,
+      source  => $varnish::manage_vcl_file_source,
+      content => $varnish::manage_vcl_file_content,
+      replace => $varnish::manage_file_replace,
+      audit   => $varnish::manage_audit,
+      noop    => $varnish::noops,
+    }
   }
 
   # The whole varnish configuration directory can be recursively overriden

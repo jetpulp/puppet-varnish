@@ -81,6 +81,16 @@ class varnish::params {
     default => '/var/log/varnish/varnish.log',
   }
 
+  $vcl_template_header = $::varnish_fact_version ? {
+    /^4/    => 'varnish/varnish4-header.vcl.erb',
+    default => '', # TODO add v3
+  }
+
+  $vcl_template_content = $::varnish_fact_version ? {
+    /^4/    => 'varnish/varnish4-content.vcl.erb',
+    default => '', # TODO add v3
+  }
+
   $backendhost = '127.0.0.1'
   $backendport = '8008'
   $debian_start = true
@@ -104,6 +114,7 @@ class varnish::params {
   $storage_file = '/var/lib/varnish/$INSTANCE/varnish_storage.bin'
   $vcl_template = ''
   $vcl_source = ''
+  $use_concat = false
 
   $protocol = 'tcp'
 
