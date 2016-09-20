@@ -14,7 +14,7 @@ define varnish::backend(
   }
   concat::fragment { "varnish-backend-director-${name}":
       order   => '25',
-      content => "vdir.add_backend(${backend_name});",
+      content => "  vdir.add_backend(${backend_name});",
       notify  => $varnish::manage_service_autorestart,
       target  => $varnish::vcl_conf,
   }
