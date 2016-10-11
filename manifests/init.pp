@@ -568,19 +568,19 @@ class varnish (
       notify  => $varnish::manage_service_autorestart,
       target  => $varnish::vcl_conf,
     }
-    concat::fragment { 'varnish+19.tmp':
+    concat::fragment { 'varnish+13.tmp':
       order   => '13',
       content => "}\n",
       notify  => $varnish::manage_service_autorestart,
       target  => $varnish::vcl_conf,
     }
-    concat::fragment { 'varnish+11.tmp':
+    concat::fragment { 'varnish+14.tmp':
       order   => '14',
       content => "acl editors {\n",
       notify  => $varnish::manage_service_autorestart,
       target  => $varnish::vcl_conf,
     }
-    concat::fragment { 'varnish+19.tmp':
+    concat::fragment { 'varnish+16.tmp':
       order   => '16',
       content => "}\n",
       notify  => $varnish::manage_service_autorestart,
