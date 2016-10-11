@@ -586,6 +586,18 @@ class varnish (
       notify  => $varnish::manage_service_autorestart,
       target  => $varnish::vcl_conf,
     }
+    concat::fragment { 'varnish+17.tmp':
+      order   => '17',
+      content => "acl trusted {\n",
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
+    concat::fragment { 'varnish+19.tmp':
+      order   => '19',
+      content => "}\n",
+      notify  => $varnish::manage_service_autorestart,
+      target  => $varnish::vcl_conf,
+    }
     concat::fragment { 'varnish+21.tmp':
       order   => '21',
       content => "sub vcl_init {\n  new vdir = directors.round_robin();\n",
